@@ -2,9 +2,9 @@ POST http://localhost:3000/api/sign-up
 Content-Type: application/json
 
 {
-  "username": "tester3",
+  "email": "tester3",
   "password": "123456",
-  "password_repeat": "123456"
+  "retypePassword": "123456"
 }
 
 ###
@@ -13,7 +13,7 @@ POST http://localhost:3000/api/login
 Content-Type: application/json
 
 {
-  "username": "tester3",
+  "email": "tester3",
   "password": "123456"
 }
 

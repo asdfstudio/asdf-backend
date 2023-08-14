@@ -7,8 +7,8 @@ const db = require('../lib/db.js');
 exports.login = async (req, res) => {
     try {
         db.query(
-            `SELECT * FROM users WHERE username = ?;`,
-            [req.body.username],
+            `SELECT * FROM users WHERE email = ?;`,
+            [req.body.email],
             (err, result) => {
               if (err) {
                 return res.status(400).send({
@@ -17,7 +17,7 @@ exports.login = async (req, res) => {
               }
               if (!result.length) {
                 return res.status(400).send({
-                  message: 'Username or password incorrect!',
+                  message: 'email or password incorrect!',
                 });
               }
         
@@ -27,14 +27,14 @@ exports.login = async (req, res) => {
                 (bErr, bResult) => {
                   if (bErr) {
                     return res.status(400).send({
-                      message: 'Username or password incorrect!',
+                      message: 'email or password incorrect!',
                     });
                   }
                   if (bResult) {
                     // password match
                     const token = jwt.sign(
                       {
-                        username: result[0].username,
+                        email: result[0].email,
                         userId: result[0].id,
                       },
                       'SECRETKEY',
@@ -50,7 +50,7 @@ exports.login = async (req, res) => {
                     });
                   }
                   return res.status(400).send({
-                    message: 'Username or password incorrect!',
+                    message: 'email or password incorrect!',
                   });
                 }
               );
@@ -62,16 +62,16 @@ exports.login = async (req, res) => {
 }
 exports.signUp = (req, res) => {
     db.query(
-        'SELECT id FROM users WHERE LOWER(username) = LOWER(?)',
-        [req.body.username],
+        'SELECT id FROM users WHERE LOWER(email) = LOWER(?)',
+        [req.body.email],
         (err, result) => {
           if (result && result.length) {
             // error
             return res.status(409).send({
-              message: 'This username is already in use!',
+              message: 'This email is already in use!',
             });
           } else {
-            // username not in use
+            // email not in use
             bcrypt.hash(req.body.password, 10, (err, hash) => {
               if (err) {
                 return res.status(500).send({
@@ -79,8 +79,8 @@ exports.signUp = (req, res) => {
                 });
               } else {
                 db.query(
-                  'INSERT INTO users (id, username, password, registered) VALUES (?, ?, ?, now());',
-                  [uuid.v4(), req.body.username, hash],
+                  'INSERT INTO users (id, email, password, registered) VALUES (?, ?, ?, now());',
+                  [uuid.v4(), req.body.email, hash],
                   (err, result) => {
                     if (err) {
                       return res.status(400).send({
