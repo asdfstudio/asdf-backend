@@ -79,8 +79,8 @@ exports.signUp = (req, res) => {
                 });
               } else {
                 db.query(
-                  'INSERT INTO users (id, email, password, registered) VALUES (?, ?, ?, now());',
-                  [uuid.v4(), req.body.email, hash],
+                  'INSERT INTO users (id, name, email, password, registered, last_login) VALUES (?, ?, ?, ?, now(), now());',
+                  [uuid.v4(), req.body.name, req.body.email, hash],
                   (err, result) => {
                     if (err) {
                       return res.status(400).send({

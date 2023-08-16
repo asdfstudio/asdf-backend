@@ -2,6 +2,12 @@ const jwt = require('jsonwebtoken');
 
 module.exports = {
   validateRegister: (req, res, next) => {
+    //name min length 30
+    if (!req.body.name || req.body.name.length > 30) {
+      return res.status(400).send({
+        message: 'Please enter a name with max. 30 chars',
+      });
+    }
     // email min length 3
     if (!req.body.email || req.body.email.length < 3) {
       return res.status(400).send({
