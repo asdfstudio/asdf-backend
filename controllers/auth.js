@@ -37,7 +37,7 @@ exports.login = async (req, res) => {
                         email: result[0].email,
                         userId: result[0].id,
                       },
-                      'SECRETKEY',
+                      process.env.JWT_SECRET,
                       { expiresIn: '1d' }
                     );
                     db.query(`UPDATE users SET last_login = now() WHERE id = ?;`, [
@@ -79,7 +79,7 @@ exports.signUp = (req, res) => {
                 });
               } else {
                 db.query(
-                  'INSERT INTO users (id, name, email, password, registered, last_login) VALUES (?, ?, ?, ?, now(), now());',
+                  'INSERT INTO users (id, name, email, password, role, registered, last_login) VALUES (?, ?, ?, ?, DEFAULT, now(), now());',
                   [uuid.v4(), req.body.name, req.body.email, hash],
                   (err, result) => {
                     if (err) {

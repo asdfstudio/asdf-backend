@@ -8,7 +8,10 @@ const PORT = process.env.PORT || 5000;
 app.use(express.json());
 app.use(cors());
 
-const router = require('./routes/router.js');
-app.use('/api', router);
+const authRouter = require('./routes/authRouter.js');
+const portfolio = require('./routes/portfolio.js');
+
+app.use('/api', authRouter);
+app.use("/api", portfolio);
 
 app.listen(PORT, () => console.log('Server running on port ' + PORT));
