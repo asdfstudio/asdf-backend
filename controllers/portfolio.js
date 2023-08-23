@@ -1,52 +1,45 @@
 const db = require('../lib/db.js');
 const uuid = require('uuid');
-exports.createProduct = (req, res) => {
 
+
+exports.createPortfolio = (req, res) => {
   const { name, desc } = req.body;
-//   let productPictures = [];
-
-//   if (req.files.length > 0) {
-//     productPictures = req.files.map((file) => {
-//       return { img: file.url };
-//     });
-//   }
-
-
+  const coverImage = req.file.filename;
   db.query(
-    'SELECT name FROM portfolio WHERE LOWER(name) = LOWER(?)',
-    [req.body.name,],
-    (err, result) => {
-      if (result && result.length) {
-        // error
-        return res.status(409).send({
-          message: 'This name is already in use!',
-        });
-      } else {
-        // email not in use
-
-        if (err) {
-        return res.status(500).send({
-            message: "err",
-        });
-        } else {
-        db.query(
-            'INSERT INTO portfolio (id, name, `desc`, createdAt) VALUES (?, ?, ?, now());',
-            [uuid.v4(), req.body.name, req.body.desc],
-            (err, result) => {
-            if (err) {
-                return res.status(400).send({
-                message: err,
-                });
-            }
-            return res.status(201).send({
-                message: 'Portfolio Added!',
-            });
-            }
-        );
-        }
+    'INSERT INTO portfolio (id, name, `desc`, `coverImage`, createdAt) VALUES (?, ?, ?, ?, now());',
+      [uuid.v4(), name, desc, coverImage],
+      (err, result) => {
+      if (err) {
+          return res.status(400).send({
+          message: err,
+          });
       }
-    }
+      return res.status(201).send({
+          message: 'Portfolio Added!',
+      });
+      }
   );
+};
+
+exports.createPortfolioImages = (req, res) => {
+  const files = req.files;
+  const portfolioId = req.body.portfolio_image_id
+
+  files.forEach(file => {
+    const filename = file.filename;
+
+    const query = 'INSERT INTO portfolio_pictures (id, `portfolio_image_id`, `images`) VALUES (?, ?, ?)';
+    db.query(query, [uuid.v4(), portfolioId, filename], (err, result) => {
+      if (err) {
+         res.status(400).send({
+          message: err,
+        });
+      }
+    });
+  });
+  res.status(201).send({
+    message: 'Portfolio Added!',
+});
 };
 
 exports.getProductDetailsById = (req, res) => {

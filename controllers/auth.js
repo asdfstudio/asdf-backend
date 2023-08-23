@@ -6,6 +6,7 @@ const db = require('../lib/db.js');
 
 exports.login = async (req, res) => {
     try {
+      console.log('req.body', req.body),
         db.query(
             `SELECT * FROM users WHERE email = ?;`,
             [req.body.email],
@@ -36,6 +37,7 @@ exports.login = async (req, res) => {
                       {
                         email: result[0].email,
                         userId: result[0].id,
+                        role: 'admin'
                       },
                       process.env.JWT_SECRET,
                       { expiresIn: '1d' }

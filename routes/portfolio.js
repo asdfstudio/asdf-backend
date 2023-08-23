@@ -2,38 +2,32 @@ const express = require("express");
 const {
   requireSignin,
   adminMiddleware,
-  upload
+  upload,
 } = require("../common-middleware");
 const {
-  createProduct,
+  createPortfolio,
   getProductDetailsById,
   deleteProductById,
   getProducts,
   getAllProducts,
   updateQuantity,
+  createPortfolioImages,
 } = require("../controllers/portfolio");
-// const multer = require("multer");
 const router = express.Router();
-// const shortid = require("shortid");
-// const path = require("path");
-
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, path.join(path.dirname(__dirname), "uploads"));
-//   },
-//   filename: function (req, file, cb) {
-//     cb(null, shortid.generate() + "-" + file.originalname);
-//   },
-// });
-
-// const uploadmulter = multer({ storage });
 
 router.post(
-  "/product/create",
+  "/portfolio/create",
   requireSignin,
-//   adminMiddleware,
-//   upload.array("productPicture"),
-  createProduct
+  adminMiddleware,
+  upload.single('coverImage'),
+  createPortfolio
+);
+router.post(
+  "/portfolio/create/portfolioImages",
+  requireSignin,
+  adminMiddleware,
+  upload.array('images'),
+  createPortfolioImages
 );
 router.get("/product/:productId", getProductDetailsById);
 router.post("/AllProducts", getAllProducts);
