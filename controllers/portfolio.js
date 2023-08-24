@@ -1,6 +1,7 @@
 const db = require('../lib/db.js');
 const uuid = require('uuid');
-
+const fs = require('fs');
+const path = require('path');
 
 exports.createPortfolio = (req, res) => {
   const { name, desc } = req.body;
@@ -23,23 +24,206 @@ exports.createPortfolio = (req, res) => {
 
 exports.createPortfolioImages = (req, res) => {
   const files = req.files;
-  const portfolioId = req.body.portfolio_image_id
+  const portfolioId = req.body.portfolio_image_id;
+  const matchID = `SELECT id FROM portfolio WHERE id = ?`;
+  db.query(matchID, [portfolioId], (err, result) => {
+    if (result[0] == null) {
+      return res.status(400).send({
+        message: 'Invalid not found',
+      });
+    } 
+      files.forEach(file => {
+        const filename = file.filename;
+        const query = 'INSERT INTO portfolio_pictures (id, `portfolio_image_id`, `image`) VALUES (?, ?, ?)';
+        db.query(query, [uuid.v4(), portfolioId, filename], (err, result) => {
+          if (err) {
+            return res.status(400).send({
+              message: err,
+            });
+          }
+        });
+      });
+      return res.status(201).send({
+        message: 'Portfolio Images Added!',
+    });
+  });
+};
 
-  files.forEach(file => {
-    const filename = file.filename;
+exports.getPortfolios = (req, res) => {
+  
+  const query = `
+    SELECT 
+      portfolio.id, 
+      portfolio.name, 
+      portfolio.desc, 
+      portfolio.coverImage, 
+      portfolio.createdAt, 
+      portfolio_pictures.id AS portfolio_pictures_id, 
+      portfolio_pictures.image
+    FROM portfolio 
+    LEFT JOIN portfolio_pictures 
+    ON portfolio.id = portfolio_pictures.portfolio_image_id`;
+    
+  // const query = 'SELECT * FROM portfolio';
+  db.query(query, (err, results) => {
+    if (err) {
+      res.status(400).send({
+        message: err,
+      });
+    }
 
-    const query = 'INSERT INTO portfolio_pictures (id, `portfolio_image_id`, `images`) VALUES (?, ?, ?)';
-    db.query(query, [uuid.v4(), portfolioId, filename], (err, result) => {
-      if (err) {
-         res.status(400).send({
-          message: err,
+    const portfolios = [];
+
+    results.forEach((row) => {
+      const existingProject = portfolios.find((p) => p.id === row.id);
+
+      if (existingProject) {
+        existingProject.portfolio_pictures.push({ 
+            id: row.portfolio_pictures_id, 
+            image: row.image 
+          });
+      } else {
+        portfolios.push({
+          id: row.id,
+          name: row.name,
+          desc: row.desc,
+          coverImage: row.coverImage,
+          createdAt: row.createdAt,
+          portfolio_pictures: row.portfolio_pictures_id ? [{ 
+            id: row.portfolio_pictures_id, 
+            image: row.image 
+          }] : [],
         });
       }
     });
+      return res.status(200).json({ portfolios });
+      // return res.status(200).send({
+      //   message: 'Portfolio delete successfully!',
+      // });
   });
-  res.status(201).send({
-    message: 'Portfolio Added!',
-});
+};
+
+exports.deletePortfolioById = (req, res) => {
+  const portfolioId = req.params.id;
+  const selectPortfolioImageQuery = `
+    SELECT 
+      portfolio.id,
+      portfolio.coverImage,
+      portfolio_pictures.id AS portfolio_pictures_id,
+      portfolio_pictures.image 
+    FROM portfolio 
+    LEFT JOIN portfolio_pictures ON portfolio.id = portfolio_pictures.portfolio_image_id 
+    WHERE portfolio.id = ?`;
+  const deletePortfolioQuery = `
+    DELETE FROM 
+      portfolio_pictures 
+    WHERE 
+      portfolio_image_id = ?`;
+
+  const deleteQuery = `
+    DELETE FROM 
+      portfolio
+    WHERE 
+      id = ?`;
+
+  if (portfolioId) {
+    db.query(selectPortfolioImageQuery, [portfolioId], (err, results) => {
+
+      // console.log(results);
+
+      const portfolios = [];
+
+      results.forEach((row) => {
+        const existingProject = portfolios.find((p) => p.id === row.id);
+  
+        if (existingProject) {
+          existingProject.portfolio_pictures.push({ 
+              id: row.portfolio_pictures_id, 
+              image: row.image 
+            });
+        } else {
+          portfolios.push({
+            id: row.id,
+            coverImage: row.coverImage,
+            portfolio_pictures: row.portfolio_pictures_id ? [{ 
+              id: row.portfolio_pictures_id, 
+              image: row.image 
+            }] : [],
+          });
+        }
+      });
+      
+      // console.log(JSON.stringify(portfolios, null, 2));
+
+      if (err) {
+        console.error('Error executing query:', err);
+        res.status(500).json({ error: 'An error occurred while retrieving data' });
+        return;
+      }
+  
+      if (results.length === 0) {
+        res.status(404).json({ error: 'Portfolio item not found' });
+        return;
+      }
+      const imagePath = portfolios[0].coverImage;
+      const imagesPath = portfolios[0].portfolio_pictures;
+
+      db.query(deletePortfolioQuery, [portfolioId], (err, result) => {
+        if (err) {
+          res.status(400).send({ message: err });
+          connection.rollback(() => {
+            res.status(500).json({ error: 'An error occurred while deleting child data' });
+          });
+          return;
+        }
+
+        db.query(deleteQuery, [portfolioId], (err, result) => {
+          if (err) {
+            res.status(400).send({ message: err });
+            connection.rollback(() => {
+              res.status(500).json({ error: 'An error occurred while deleting portfolio data' });
+            });
+            return;
+          }
+
+          db.commit((err) => {
+            if (err) {
+              res.status(400).send({ message: err });
+              connection.rollback(() => {
+                res.status(500).json({ error: 'An error occurred while committing transaction' });
+              });
+              return;
+            }
+            return res.status(200).send({
+              message: 'Portfolio delete successfully!',
+            });
+          });
+
+          if (imagePath) {
+            const coverImagePathToDelete = path.join(__dirname, "../uploads", imagePath);
+            fs.unlink(coverImagePathToDelete, (err) => {
+              if (err) {
+                res.status(400).send({ message: "Cover image is not deleting from local storage" });
+              }
+            });
+          }
+    
+          imagesPath.forEach((row) => {
+            const imageToDelete = row.image;
+            const imagePathToDelete = path.join(__dirname, "../uploads", imageToDelete);
+      
+            fs.unlink(imagePathToDelete, (err) => {
+              if (err) {
+                res.status(400).send({ message: "Porfolio images is not deleting from local storage" });
+              }
+            });
+          });
+        });
+    });
+  });
+  } else {
+    res.status(400).json({ error: "Params required" });
+  }
 };
 
 exports.getProductDetailsById = (req, res) => {
@@ -54,31 +238,6 @@ exports.getProductDetailsById = (req, res) => {
   } else {
     return res.status(400).json({ error: "Params required" });
   }
-};
-
-// new update
-exports.deleteProductById = (req, res) => {
-  const { productId } = req.body.payload;
-  if (productId) {
-    Product.deleteOne({ _id: productId }).exec((error, result) => {
-      if (error) return res.status(400).json({ error });
-      if (result) {
-        res.status(202).json({ result });
-      }
-    });
-  } else {
-    res.status(400).json({ error: "Params required" });
-  }
-};
-
-exports.getProducts = async (req, res) => {
-  const products = await Product
-    .find({ createdBy: req.user._id })
-    .select("_id name price brand type quantity slug description productPictures category")
-    .populate({ path: "category", select: "_id name" })
-    .exec();
-
-  res.status(200).json({ products });
 };
 
 exports.updateQuantity = (req, res) => {

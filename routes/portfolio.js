@@ -7,11 +7,11 @@ const {
 const {
   createPortfolio,
   getProductDetailsById,
-  deleteProductById,
-  getProducts,
+  getPortfolios,
   getAllProducts,
   updateQuantity,
   createPortfolioImages,
+  deletePortfolioById,
 } = require("../controllers/portfolio");
 const router = express.Router();
 
@@ -29,20 +29,22 @@ router.post(
   upload.array('images'),
   createPortfolioImages
 );
-router.get("/product/:productId", getProductDetailsById);
-router.post("/AllProducts", getAllProducts);
+router.get(
+  "/portfolio/getPortfolios",
+  requireSignin,
+  adminMiddleware,
+  getPortfolios
+);
 router.delete(
-  "/product/deleteProductById",
+  "/portfolio/deleteProductById/:id",
   requireSignin,
   adminMiddleware,
-  deleteProductById
+  deletePortfolioById
 );
-router.post(
-  "/product/getProducts",
-  requireSignin,
-  adminMiddleware,
-  getProducts
-);
+
+
+router.post("/AllProducts", getAllProducts);
+router.get("/product/:productId", getProductDetailsById);
 router.post(
   "/updateQuantity",
   requireSignin,
