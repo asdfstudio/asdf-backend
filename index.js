@@ -10,8 +10,12 @@ app.use(cors());
 
 const authRouter = require('./routes/authRouter.js');
 const portfolio = require('./routes/portfolio.js');
+const portfolioImages = require('./routes/portfolioImages.js');
+const portfolioTags = require('./routes/portfolioTags.js');
 
 app.use('/api', authRouter);
 app.use("/api", portfolio);
+app.use("/api", portfolioImages);
+app.use("/api", portfolioTags);
 
 app.listen(PORT, () => console.log('Server running on port ' + PORT));

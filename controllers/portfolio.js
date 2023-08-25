@@ -22,33 +22,6 @@ exports.createPortfolio = (req, res) => {
   );
 };
 
-exports.createPortfolioImages = (req, res) => {
-  const files = req.files;
-  const portfolioId = req.body.portfolio_image_id;
-  const matchID = `SELECT id FROM portfolio WHERE id = ?`;
-  db.query(matchID, [portfolioId], (err, result) => {
-    if (result[0] == null) {
-      return res.status(400).send({
-        message: 'Invalid not found',
-      });
-    } 
-      files.forEach(file => {
-        const filename = file.filename;
-        const query = 'INSERT INTO portfolio_pictures (id, `portfolio_image_id`, `image`) VALUES (?, ?, ?)';
-        db.query(query, [uuid.v4(), portfolioId, filename], (err, result) => {
-          if (err) {
-            return res.status(400).send({
-              message: err,
-            });
-          }
-        });
-      });
-      return res.status(201).send({
-        message: 'Portfolio Images Added!',
-    });
-  });
-};
-
 exports.getPortfolios = (req, res) => {
   
   const query = `
@@ -59,10 +32,14 @@ exports.getPortfolios = (req, res) => {
       portfolio.coverImage, 
       portfolio.createdAt, 
       portfolio_pictures.id AS portfolio_pictures_id, 
-      portfolio_pictures.image
+      portfolio_pictures.image,
+      portfolio_tags.id AS portfolio_tags_id, 
+      portfolio_tags.tag
     FROM portfolio 
     LEFT JOIN portfolio_pictures 
-    ON portfolio.id = portfolio_pictures.portfolio_image_id`;
+    ON portfolio.id = portfolio_pictures.portfolio_image_id
+    LEFT JOIN portfolio_tags 
+    ON portfolio.id = portfolio_tags.portfolio_tag_id`;
     
   // const query = 'SELECT * FROM portfolio';
   db.query(query, (err, results) => {
@@ -75,28 +52,50 @@ exports.getPortfolios = (req, res) => {
     const portfolios = [];
 
     results.forEach((row) => {
-      const existingProject = portfolios.find((p) => p.id === row.id);
+      const {
+        id,
+        name,
+        desc,
+        coverImage,
+        createdAt,
+        portfolio_pictures_id,
+        image,
+        portfolio_tags_id,
+        tag
+      } = row;
 
-      if (existingProject) {
-        existingProject.portfolio_pictures.push({ 
-            id: row.portfolio_pictures_id, 
-            image: row.image 
-          });
-      } else {
-        portfolios.push({
-          id: row.id,
-          name: row.name,
-          desc: row.desc,
-          coverImage: row.coverImage,
-          createdAt: row.createdAt,
-          portfolio_pictures: row.portfolio_pictures_id ? [{ 
-            id: row.portfolio_pictures_id, 
-            image: row.image 
-          }] : [],
+      let portfolio = portfolios.find((p) => p.id === id);
+
+      if (!portfolio) {
+        portfolio = {
+          id,
+          name,
+          desc,
+          coverImage,
+          createdAt,
+          portfolio_pictures: [],
+          portfolio_tags: []
+        };
+        portfolios.push(portfolio);
+      }
+      
+      if (portfolio_pictures_id && image && !portfolio.portfolio_pictures.some(pic => pic.id === portfolio_pictures_id)) {
+        portfolio.portfolio_pictures.push({
+          id: portfolio_pictures_id,
+          image: image
+        });
+      }
+    
+      if (portfolio_tags_id && tag && !portfolio.portfolio_tags.some(t => t.id === portfolio_tags_id)) {
+        portfolio.portfolio_tags.push({
+          id: portfolio_tags_id,
+          tag: tag
         });
       }
     });
       return res.status(200).json({ portfolios });
+
+
       // return res.status(200).send({
       //   message: 'Portfolio delete successfully!',
       // });
