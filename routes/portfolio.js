@@ -16,15 +16,15 @@ const router = express.Router();
 
 router.post(
   "/portfolio/create",
-  requireSignin,
-  adminMiddleware,
+  // requireSignin,
+  // adminMiddleware,
   upload.single('coverImage'),
   createPortfolio
 );
 router.get(
   "/portfolio/getPortfolios",
-  requireSignin,
-  adminMiddleware,
+  // requireSignin,
+  // adminMiddleware,
   getPortfolios
 );
 router.delete(
