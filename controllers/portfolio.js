@@ -105,7 +105,8 @@ exports.getPortfolios = (req, res) => {
 };
 
 exports.deletePortfolioById = (req, res) => {
-  const portfolioId = req.params.id;
+  // const portfolioId = req.params.id;
+  const { portfolioId } = req.body.payload;
   const selectPortfolioImageQuery = `
     SELECT 
       portfolio.id,
@@ -115,11 +116,17 @@ exports.deletePortfolioById = (req, res) => {
     FROM portfolio 
     LEFT JOIN portfolio_pictures ON portfolio.id = portfolio_pictures.portfolio_image_id 
     WHERE portfolio.id = ?`;
+
   const deletePortfolioQuery = `
     DELETE FROM 
       portfolio_pictures 
     WHERE 
       portfolio_image_id = ?`;
+  const deletePortfolioTagsQuery = `
+    DELETE FROM 
+      portfolio_tags 
+    WHERE 
+      portfolio_tag_id = ?`;
 
   const deleteQuery = `
     DELETE FROM 
@@ -127,10 +134,10 @@ exports.deletePortfolioById = (req, res) => {
     WHERE 
       id = ?`;
 
+      // console.log("portfolioIdddddddd", portfolioId);
+
   if (portfolioId) {
     db.query(selectPortfolioImageQuery, [portfolioId], (err, results) => {
-
-      // console.log(results);
 
       const portfolios = [];
 
@@ -169,7 +176,7 @@ exports.deletePortfolioById = (req, res) => {
       const imagePath = portfolios[0].coverImage;
       const imagesPath = portfolios[0].portfolio_pictures;
 
-      db.query(deletePortfolioQuery, [portfolioId], (err, result) => {
+      db.query(deletePortfolioTagsQuery, [portfolioId], (err, result) => {
         if (err) {
           res.status(400).send({ message: err });
           connection.rollback(() => {
@@ -178,52 +185,62 @@ exports.deletePortfolioById = (req, res) => {
           return;
         }
 
-        db.query(deleteQuery, [portfolioId], (err, result) => {
+        db.query(deletePortfolioQuery, [portfolioId], (err, result) => {
           if (err) {
             res.status(400).send({ message: err });
             connection.rollback(() => {
-              res.status(500).json({ error: 'An error occurred while deleting portfolio data' });
+              res.status(500).json({ error: 'An error occurred while deleting child data' });
             });
             return;
           }
 
-          db.commit((err) => {
+          db.query(deleteQuery, [portfolioId], (err, result) => {
             if (err) {
               res.status(400).send({ message: err });
               connection.rollback(() => {
-                res.status(500).json({ error: 'An error occurred while committing transaction' });
+                res.status(500).json({ error: 'An error occurred while deleting portfolio data' });
               });
               return;
             }
-            return res.status(200).send({
-              message: 'Portfolio delete successfully!',
-            });
-          });
 
-          if (imagePath) {
-            const coverImagePathToDelete = path.join(__dirname, "../uploads", imagePath);
-            fs.unlink(coverImagePathToDelete, (err) => {
+            db.commit((err) => {
               if (err) {
-                res.status(400).send({ message: "Cover image is not deleting from local storage" });
+                res.status(400).send({ message: err });
+                connection.rollback(() => {
+                  res.status(500).json({ error: 'An error occurred while committing transaction' });
+                });
+                return;
               }
+              return res.status(200).send({
+                message: 'Portfolio delete successfully!',
+              });
             });
-          }
-    
-          imagesPath.forEach((row) => {
-            const imageToDelete = row.image;
-            const imagePathToDelete = path.join(__dirname, "../uploads", imageToDelete);
+
+            if (imagePath) {
+              const coverImagePathToDelete = path.join(__dirname, "../uploads", imagePath);
+              fs.unlink(coverImagePathToDelete, (err) => {
+                if (err) {
+                  res.status(400).send({ message: "Cover image is not deleting from local storage" });
+                }
+              });
+            }
       
-            fs.unlink(imagePathToDelete, (err) => {
-              if (err) {
-                res.status(400).send({ message: "Porfolio images is not deleting from local storage" });
-              }
+            imagesPath.forEach((row) => {
+              const imageToDelete = row.image;
+              const imagePathToDelete = path.join(__dirname, "../uploads", imageToDelete);
+        
+              fs.unlink(imagePathToDelete, (err) => {
+                if (err) {
+                  res.status(400).send({ message: "Porfolio images is not deleting from local storage" });
+                }
+              });
             });
           });
         });
+      });
     });
-  });
   } else {
-    res.status(400).json({ error: "Params required" });
+    res.status(400).json({ error: "Invalid Portfolio" });
   }
 };
 

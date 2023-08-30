@@ -28,9 +28,9 @@ router.get(
   getPortfolios
 );
 router.delete(
-  "/portfolio/deleteProductById/:id",
-  requireSignin,
-  adminMiddleware,
+  "/portfolio/deletePortfolioById",
+  // requireSignin,
+  // adminMiddleware,
   deletePortfolioById
 );
 
