@@ -6,9 +6,10 @@ const path = require('path');
 exports.createPortfolio = (req, res) => {
   const { name, desc } = req.body;
   const coverImage = req.file.filename;
+  const portfolioId = uuid.v4();
   db.query(
     'INSERT INTO portfolio (id, name, `desc`, `coverImage`, createdAt) VALUES (?, ?, ?, ?, now());',
-      [uuid.v4(), name, desc, coverImage],
+      [portfolioId, name, desc, coverImage],
       (err, result) => {
       if (err) {
           return res.status(400).send({
@@ -17,6 +18,7 @@ exports.createPortfolio = (req, res) => {
       }
       return res.status(201).send({
           message: 'Portfolio Added!',
+          portfolioId: portfolioId, 
       });
       }
   );

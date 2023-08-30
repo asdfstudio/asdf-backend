@@ -5,12 +5,12 @@ const path = require('path');
 
 exports.createPortfolioImages = (req, res) => {
   const files = req.files;
-  const portfolioId = req.body.portfolio_image_id;
+  const portfolioId = req.body.portfolioId;
   const matchID = `SELECT id FROM portfolio WHERE id = ?`;
   db.query(matchID, [portfolioId], (err, result) => {
     if (result[0] == null) {
       return res.status(400).send({
-        message: 'Invalid not found',
+        message: `Invalid portfolio not found`,
       });
     } 
       files.forEach(file => {

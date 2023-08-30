@@ -6,7 +6,6 @@ const db = require('../lib/db.js');
 
 exports.login = async (req, res) => {
     try {
-      console.log('req.body', req.body),
         db.query(
             `SELECT * FROM users WHERE email = ?;`,
             [req.body.email],
