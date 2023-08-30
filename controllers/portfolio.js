@@ -106,7 +106,7 @@ exports.getPortfolios = (req, res) => {
 
 exports.deletePortfolioById = (req, res) => {
   // const portfolioId = req.params.id;
-  const { portfolioId } = req.body.payload;
+  const { portfolioId } = req.body.portfolioId;
   const selectPortfolioImageQuery = `
     SELECT 
       portfolio.id,

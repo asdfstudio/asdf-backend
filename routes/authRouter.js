@@ -9,6 +9,8 @@ const userMiddleware = require('../middleware/users.js');
 router.post('/signup', userMiddleware.validateRegister, authController.signUp)
 router.post('/login', authController.login)
 router.post('/logout', authController.logout);
+router.post('/updateUser', authController.updateUser);
+router.post('/updatePassword', authController.updatePassword);
 
 router.get('/secret-route', userMiddleware.isLoggedIn, (req, res, next) => {
   console.log(req.userData);
