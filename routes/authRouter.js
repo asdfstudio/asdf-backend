@@ -13,7 +13,7 @@ router.post('/updateUser', authController.updateUser);
 router.post('/updatePassword', authController.updatePassword);
 
 router.get('/secret-route', userMiddleware.isLoggedIn, (req, res, next) => {
-  console.log(req.userData);
+  // console.log(req.userData);
   res.send('This is secret content!');
 });
 

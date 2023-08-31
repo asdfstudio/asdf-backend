@@ -12,12 +12,12 @@ exports.login = async (req, res) => {
             (err, result) => {
               if (err) {
                 return res.status(400).send({
-                  message: err,
+                  message: 'email is incorrect!'
                 });
               }
               if (!result.length) {
                 return res.status(400).send({
-                  message: 'email or password incorrect!',
+                  message: 'email is incorrect!'
                 });
               }
         
@@ -51,7 +51,7 @@ exports.login = async (req, res) => {
                     });
                   }
                   return res.status(400).send({
-                    message: 'email or password incorrect!',
+                    message: 'email or password incorrect!!!',
                   });
                 }
               );

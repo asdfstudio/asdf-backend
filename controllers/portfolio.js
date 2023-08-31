@@ -5,7 +5,7 @@ const path = require('path');
 
 exports.createPortfolio = (req, res) => {
   const { name, desc } = req.body;
-  const coverImage = req.file.filename;
+  const coverImage = req.file?.filename;
   const portfolioId = uuid.v4();
   db.query(
     'INSERT INTO portfolio (id, name, `desc`, `coverImage`, createdAt) VALUES (?, ?, ?, ?, now());',
