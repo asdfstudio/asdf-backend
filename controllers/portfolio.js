@@ -18,10 +18,78 @@ exports.createPortfolio = (req, res) => {
       }
       return res.status(201).send({
           message: 'Portfolio Added!',
-          portfolioId: portfolioId, 
+          portfolioId: portfolioId,
       });
       }
   );
+};
+
+exports.updateSortingPortfolio = (req, res) => {
+  const items = req.body.items;
+  const truncateQuery = `DELETE FROM portfolio`;
+  const truncateImagesQuery = `DELETE FROM portfolio_pictures`;
+  const truncateTagsQuery = `TRUNCATE TABLE portfolio_tags`;
+  
+  const insertQuery = 'INSERT INTO portfolio (id, name, `desc`, `coverImage`, createdAt) VALUES (?, ?, ?, ?, ?)';
+  const insertImagesQuery = 'INSERT INTO portfolio_pictures (id, `portfolio_image_id`, `image`) VALUES (?, ?, ?)';
+  const insertTagsQuery = 'INSERT INTO portfolio_tags (id, `portfolio_tag_id`, `tag`) VALUES (?, ?, ?)';
+
+  
+  db.query(truncateTagsQuery, (err, result) => {
+    if (err) {
+        return res.status(400).send({
+          message: "TRUNCATE TABLE Failed => Tags",
+        });
+    }
+      db.query(truncateImagesQuery, (err, result) => {
+      if (err) {
+          return res.status(400).send({
+            message: "TRUNCATE TABLE Failed => Images",
+          });
+      }
+        db.query(truncateQuery, (err, result) => {
+          if (err) {
+              return res.status(400).send({
+                message: err,
+              });
+          }
+        
+          items.forEach((item) => {
+            db.query(insertQuery, [item.id, item.name, item.desc, item.coverImage, item.createdAt], (err, results) => {
+              if (err) {
+                return res.status(400).send({
+                message: err,
+                });
+            }
+
+              item.portfolio_pictures.forEach(image => {
+                db.query(insertImagesQuery, [image.id, item.id, image.filename], (err, result) => {
+                  if (err) {
+                    return res.status(400).send({
+                      message: err,
+                    });
+                  }
+                });
+              });
+    
+              item.portfolio_tags.forEach(tag => {
+                db.query(insertTagsQuery, [tag.id, item.id, tag.filename], (err, result) => {
+                  if (err) {
+                    return res.status(400).send({
+                      message: err,
+                    });
+                  }
+                });
+              });
+      
+              return res.status(201).send({
+                message: 'Portfolio Sorted!'
+              });
+            });
+          });
+        });
+    });
+  });
 };
 
 exports.getPortfolios = (req, res) => {
