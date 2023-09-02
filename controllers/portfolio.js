@@ -8,7 +8,7 @@ exports.createPortfolio = (req, res) => {
   const coverImage = req.file?.filename;
   const portfolioId = uuid.v4();
   db.query(
-    'INSERT INTO portfolio (id, name, `desc`, `coverImage`, createdAt) VALUES (?, ?, ?, ?, now());',
+    'INSERT INTO portfolio (id, name, `desc`, `coverImage`, createdAt, `sortedOrder`) VALUES (?, ?, ?, ?, now(), DEFAULT);',
       [portfolioId, name, desc, coverImage],
       (err, result) => {
       if (err) {
@@ -26,7 +26,31 @@ exports.createPortfolio = (req, res) => {
 
 exports.updateSortingPortfolio = (req, res) => {
   const items = req.body.items;
+  const updateQuery = `UPDATE portfolio SET sortedOrder = ? WHERE id = ?`;
+
+  let hasError = false;
+
+  items.forEach((item, index) => {
+    db.query(updateQuery, [index, item.id], (err, results) => {
+      if (err) {
+        hasError = true; // Set the error flag
+        console.error('Error updating portfolio:', err);
+      }
+      if (index === items.length - 1) {
+        if (hasError) {
+          return res.status(400).send({
+            message: 'Error updating portfolio',
+          });
+        } else {
+          return res.status(201).send({
+            message: 'Portfolio Sorted!',
+          });
+        }
+      }
+    });
+  });
 };
+
 
 exports.getPortfolios = (req, res) => {
   
@@ -45,7 +69,8 @@ exports.getPortfolios = (req, res) => {
     LEFT JOIN portfolio_pictures 
     ON portfolio.id = portfolio_pictures.portfolio_image_id
     LEFT JOIN portfolio_tags 
-    ON portfolio.id = portfolio_tags.portfolio_tag_id`;
+    ON portfolio.id = portfolio_tags.portfolio_tag_id
+    ORDER BY portfolio.sortedOrder ASC`;
     
   // const query = 'SELECT * FROM portfolio';
   db.query(query, (err, results) => {
