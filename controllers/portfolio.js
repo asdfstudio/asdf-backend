@@ -70,7 +70,7 @@ exports.getPortfolios = (req, res) => {
     ON portfolio.id = portfolio_pictures.portfolio_image_id
     LEFT JOIN portfolio_tags 
     ON portfolio.id = portfolio_tags.portfolio_tag_id
-    ORDER BY portfolio.sortedOrder ASC`;
+    ORDER BY portfolio.sortedOrder ASC, portfolio_pictures.sortedOrder ASC;`;
     
   // const query = 'SELECT * FROM portfolio';
   db.query(query, (err, results) => {

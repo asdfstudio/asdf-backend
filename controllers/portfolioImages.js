@@ -13,10 +13,10 @@ exports.createPortfolioImages = (req, res) => {
         message: `Invalid portfolio not found`,
       });
     } 
-      files.forEach(file => {
+        files.forEach((file, index) => {
         const filename = file.filename;
-        const query = 'INSERT INTO portfolio_pictures (id, `portfolio_image_id`, `image`) VALUES (?, ?, ?)';
-        db.query(query, [uuid.v4(), portfolioId, filename], (err, result) => {
+        const query = 'INSERT INTO portfolio_pictures (id, `portfolio_image_id`, `image`, `sortedOrder`) VALUES (?, ?, ?, ?)';
+        db.query(query, [uuid.v4(), portfolioId, filename, index], (err, result) => {
           if (err) {
             return res.status(400).send({
               message: err,
