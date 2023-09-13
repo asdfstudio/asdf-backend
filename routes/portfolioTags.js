@@ -5,7 +5,7 @@ const {
   upload,
 } = require("../common-middleware");
 const { 
-  createPortfolioTags
+  createPortfolioTags, updatePortfolioTags
 } = require("../controllers/portfolioTags");
 const router = express.Router();
 
@@ -14,6 +14,12 @@ router.post(
   // requireSignin,
   // adminMiddleware,
   createPortfolioTags
+);
+router.post(
+  "/portfolio/update/portfolioTags",
+  // requireSignin,
+  // adminMiddleware,
+  updatePortfolioTags
 );
 
 module.exports = router;

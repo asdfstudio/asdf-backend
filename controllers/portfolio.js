@@ -24,6 +24,74 @@ exports.createPortfolio = (req, res) => {
   );
 };
 
+exports.updatePortfolio = (req, res) => {
+  const { id, name, desc } = req.body;
+  const coverImageUpdate = req.file?.filename;
+
+  // Check if the portfolio with the given ID exists first
+  db.query('SELECT * FROM portfolio WHERE id = ? LIMIT 1', [id], (err, rows) => {
+    if (err) {
+      return res.status(500).send({ message: 'Internal Server Error' });
+    }
+
+    if (rows.length === 0) {
+      return res.status(404).send({ message: 'Portfolio not found' });
+    }
+
+    // If there is a new cover image, delete the old one and update with the new one
+    if (coverImageUpdate) {
+      const oldCoverImage = rows[0].coverImage;
+
+      // Delete the old cover image from storage
+      if (oldCoverImage) {
+        const oldCoverImagePathToDelete = path.join(__dirname, "../uploads", oldCoverImage);
+        fs.unlink(oldCoverImagePathToDelete, (unlinkErr) => {
+          if (unlinkErr) {
+            console.error('Error deleting old cover image:', unlinkErr);
+          }
+        });
+      }
+
+      // Update the portfolio with the new cover image
+      const updateQuery = 'UPDATE portfolio SET name = ?, `desc` = ?, `coverImage` = ?, createdAt = now() WHERE id = ?';
+      db.query(
+        updateQuery,
+        [name, desc, coverImageUpdate, id],
+        (updateErr, updateResult) => {
+          if (updateErr) {
+            return res.status(400).send({
+              message: updateErr,
+            });
+          }
+          return res.status(201).send({
+            message: 'Portfolio updated!',
+            portfolioId: id,
+          });
+        }
+      );
+    } else {
+      // If there is no new cover image, update the portfolio without changing the cover image
+      const updateQuery = 'UPDATE portfolio SET name = ?, `desc` = ?, createdAt = now() WHERE id = ?';
+      db.query(
+        updateQuery,
+        [name, desc, id],
+        (updateErr, updateResult) => {
+          if (updateErr) {
+            return res.status(400).send({
+              message: updateErr,
+            });
+          }
+          return res.status(201).send({
+            message: 'Portfolio updated!',
+            portfolioId: id,
+          });
+        }
+      );
+    }
+  });
+};
+
+
 exports.updateSortingPortfolio = (req, res) => {
   const items = req.body.items;
   const updateQuery = `UPDATE portfolio SET sortedOrder = ? WHERE id = ?`;

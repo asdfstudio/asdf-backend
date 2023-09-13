@@ -12,6 +12,7 @@ const {
   updateQuantity,
   deletePortfolioById,
   updateSortingPortfolio,
+  updatePortfolio,
 } = require("../controllers/portfolio");
 const router = express.Router();
 
@@ -21,6 +22,13 @@ router.post(
   // adminMiddleware,
   upload.single('coverImage'),
   createPortfolio
+);
+router.post(
+  "/portfolio/update",
+  // requireSignin,
+  // adminMiddleware,
+  upload.single('coverImageUpdate'),
+  updatePortfolio
 );
 router.post(
   "/portfolio/updateSorting",
