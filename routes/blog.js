@@ -4,46 +4,39 @@ const {
   adminMiddleware,
   upload,
 } = require("../common-middleware");
-const {
-  createPortfolio,
-  getPortfolios,
-  deletePortfolioById,
-  updateSortingPortfolio,
-  updatePortfolio,
-} = require("../controllers/portfolio");
+const { 
+  createBlog, 
+  updateBlog, 
+  getBlogs, 
+  deleteBlogById 
+} = require("../controllers/blog");
 const router = express.Router();
 
 router.post(
-  "/portfolio/create",
+  "/blog/create",
   // requireSignin,
   // adminMiddleware,
   upload.single('coverImage'),
-  createPortfolio
+  createBlog
 );
 router.post(
-  "/portfolio/update",
+  "/blog/update",
   // requireSignin,
   // adminMiddleware,
   upload.single('coverImageUpdate'),
-  updatePortfolio
-);
-router.post(
-  "/portfolio/updateSorting",
-  // requireSignin,
-  // adminMiddleware,
-  updateSortingPortfolio
+  updateBlog
 );
 router.get(
-  "/portfolio/getPortfolios",
+  "/blog/getBlogs",
   // requireSignin,
   // adminMiddleware,
-  getPortfolios
+  getBlogs
 );
 router.delete(
-  "/portfolio/deletePortfolioById",
+  "/blog/deleteBlogById",
   // requireSignin,
   // adminMiddleware,
-  deletePortfolioById
+  deleteBlogById
 );
 
 module.exports = router;

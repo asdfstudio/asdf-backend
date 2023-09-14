@@ -28,7 +28,6 @@ exports.updatePortfolio = (req, res) => {
   const { id, name, desc } = req.body;
   const coverImageUpdate = req.file?.filename;
 
-  // Check if the portfolio with the given ID exists first
   db.query('SELECT * FROM portfolio WHERE id = ? LIMIT 1', [id], (err, rows) => {
     if (err) {
       return res.status(500).send({ message: 'Internal Server Error' });
@@ -38,11 +37,9 @@ exports.updatePortfolio = (req, res) => {
       return res.status(404).send({ message: 'Portfolio not found' });
     }
 
-    // If there is a new cover image, delete the old one and update with the new one
     if (coverImageUpdate) {
       const oldCoverImage = rows[0].coverImage;
 
-      // Delete the old cover image from storage
       if (oldCoverImage) {
         const oldCoverImagePathToDelete = path.join(__dirname, "../uploads", oldCoverImage);
         fs.unlink(oldCoverImagePathToDelete, (unlinkErr) => {
@@ -52,7 +49,6 @@ exports.updatePortfolio = (req, res) => {
         });
       }
 
-      // Update the portfolio with the new cover image
       const updateQuery = 'UPDATE portfolio SET name = ?, `desc` = ?, `coverImage` = ?, createdAt = now() WHERE id = ?';
       db.query(
         updateQuery,
@@ -70,7 +66,6 @@ exports.updatePortfolio = (req, res) => {
         }
       );
     } else {
-      // If there is no new cover image, update the portfolio without changing the cover image
       const updateQuery = 'UPDATE portfolio SET name = ?, `desc` = ?, createdAt = now() WHERE id = ?';
       db.query(
         updateQuery,
@@ -339,108 +334,4 @@ exports.deletePortfolioById = (req, res) => {
   } else {
     res.status(400).json({ error: "Invalid Portfolio" });
   }
-};
-
-exports.getProductDetailsById = (req, res) => {
-  const { productId } = req.params;
-  if (productId) {
-    Product.findOne({ _id: productId }).exec((error, product) => {
-      if (error) return res.status(400).json({ error });
-      if (product) {
-        res.status(200).json({ product });
-      }
-    });
-  } else {
-    return res.status(400).json({ error: "Params required" });
-  }
-};
-
-exports.updateQuantity = (req, res) => {
-
-  // req.body.map((item) => {
-  //   console.log(item.totalQuantity);
-
-  //   Product.findByIdAndUpdate(
-  //     {
-  //       _id: item.productId
-  //     },
-  //     { "quantity": item.totalQuantity },
-      
-  //     function (err, result) {
-  //       if (err) {
-  //         res.send(err)
-  //       }
-  //       else {
-  //         res.send(result)
-  //       }
-  //     })
-  // });
-
-  // console.log(req.body.totalQuantity);
-  Product.updateOne(
-    {
-      _id: req.body.productId
-    },
-    { "quantity": req.body.totalQuantity }, 
-    function(err, result){
-      if(err){
-        res.send(err)
-    }
-    else{
-        res.send(result)
-    }
-    })
-};
-
-exports.getAllProducts = (req, res) => {
-
-  let order = req.body.order ? req.body.order : "desc";
-  let sortBy = req.body.sortBy ? req.body.sortBy : "_id";
-  let limit = req.body.limit ? parseInt(req.body.limit) : 100;
-  let skip = parseInt(req.body.skip);
-  let findArgs = {};
-  let term = req.body.searchTerm;
-  for (let key in req.body.filters) {
-
-    if (req.body.filters[key].length > 0) {
-      if (key === "price") {
-        findArgs[key] = {
-          $gte: req.body.filters[key][0],
-          $lte: req.body.filters[key][1]
-        }
-      }
-      else if (key === "continents") {
-        term = req.body.filters[key];
-        console.log(term)
-      }
-      else {
-        findArgs[key] = req.body.filters[key];
-      }
-    }
-  }
-
-  if (term) {
-
-    var regex = new RegExp(req.body.searchTerm, 'i');
-    Product.find({ name: regex })
-      .sort([[sortBy, order]])
-      .skip(skip)
-      .limit(limit)
-      .exec((err, products) => {
-        if (err) return res.status(400).json({ success: false, err })
-        res.status(200).json({ success: true, products, postSize: products.length })
-        //console.log(products)
-      })
-  } else {
-    Product.find(findArgs)
-      .populate("writer")
-      .sort([[sortBy, order]])
-      .skip(skip)
-      .limit(limit)
-      .exec((err, products) => {
-        if (err) return res.status(400).json({ success: false, err })
-        res.status(200).json({ success: true, products, postSize: products.length })
-      })
-  }
-
 };
