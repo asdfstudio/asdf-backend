@@ -38,9 +38,6 @@ exports.updateBlog = (req, res) => {
           return res.status(404).send({ message: 'Blog post not found' });
       }
 
-      let updateQuery;
-      const queryParams = [title, desc, blogId];
-
       if (coverImageUpdate) {
           const oldCoverImage = rows[0].coverImage;
 
@@ -53,23 +50,37 @@ exports.updateBlog = (req, res) => {
               });
           }
 
-          updateQuery = 'UPDATE blog_post SET title = ?, `desc` = ?, `coverImage` = ?, upload_time = now() WHERE id = ?';
-          queryParams.push(coverImageUpdate);
+          const updateQuery = 'UPDATE blog_post SET title = ?, `desc` = ?, `coverImage` = ?, upload_time = now() WHERE id = ?';
+          db.query(updateQuery, 
+            [title, desc, coverImageUpdate, blogId], 
+            (updateErr, updateResult) => {
+            if (updateErr) {
+                return res.status(400).send({
+                    message: updateErr,
+                });
+            }
+            return res.status(200).send({
+                message: 'Blog post updated!',
+                blogId: blogId,
+            });
+        });
       } else {
-          updateQuery = 'UPDATE blog_post SET title = ?, `desc` = ?, upload_time = now() WHERE id = ?';
-      }
-
-      db.query(updateQuery, queryParams, (updateErr, updateResult) => {
-          if (updateErr) {
-              return res.status(400).send({
-                  message: updateErr,
+          const updateQuery = 'UPDATE blog_post SET title = ?, `desc` = ?, upload_time = now() WHERE id = ?';
+          db.query(
+            updateQuery, 
+            [title, desc, blogId], 
+            (updateErr, updateResult) => {
+              if (updateErr) {
+                  return res.status(400).send({
+                      message: updateErr,
+                  });
+              }
+              return res.status(200).send({
+                  message: 'Blog post updated!',
+                  blogId: blogId,
               });
-          }
-          return res.status(200).send({
-              message: 'Blog post updated!',
-              blogId: blogId,
           });
-      });
+      }
   });
 };
 
