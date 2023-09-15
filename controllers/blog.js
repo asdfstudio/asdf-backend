@@ -4,13 +4,12 @@ const fs = require('fs');
 const path = require('path');
 
 exports.createBlog = (req, res) => {
-  const { title, desc } = req.body;
+  const { userId, title, desc, long_desc } = req.body;
   const coverImage = req.file?.filename;
   const blogId = uuid.v4();
-  const userId = '52e455d2-ef79-4b0d-8d6f-16662549977a';
   db.query(
-    'INSERT INTO blog_post (id, `title`, `desc`, `coverImage`, `created_by`, `upload_time`, `views`) VALUES (?, ?, ?, ?, ?, now(), DEFAULT);',
-      [blogId, title, desc, coverImage, userId],
+    'INSERT INTO blog_post (id, `title`, `desc`, `long_desc`, `coverImage`, `created_by`, `upload_time`, `views`) VALUES (?, ?, ?, ?, ?, ?, now(), DEFAULT);',
+      [blogId, title, desc, long_desc, coverImage, userId],
       (err, result) => {
       if (err) {
           return res.status(400).send({
@@ -26,7 +25,7 @@ exports.createBlog = (req, res) => {
 };
 
 exports.updateBlog = (req, res) => {
-  const { blogId, title, desc } = req.body;
+  const { blogId, title, desc, long_desc } = req.body;
   const coverImageUpdate = req.file?.filename;
 
   db.query('SELECT * FROM blog_post WHERE id = ? LIMIT 1', [blogId], (err, rows) => {
@@ -50,9 +49,9 @@ exports.updateBlog = (req, res) => {
               });
           }
 
-          const updateQuery = 'UPDATE blog_post SET title = ?, `desc` = ?, `coverImage` = ?, upload_time = now() WHERE id = ?';
+          const updateQuery = 'UPDATE blog_post SET title = ?, `desc` = ?, `long_desc` = ?, `coverImage` = ?, upload_time = now() WHERE id = ?';
           db.query(updateQuery, 
-            [title, desc, coverImageUpdate, blogId], 
+            [title, desc, long_desc, coverImageUpdate, blogId], 
             (updateErr, updateResult) => {
             if (updateErr) {
                 return res.status(400).send({
@@ -65,10 +64,10 @@ exports.updateBlog = (req, res) => {
             });
         });
       } else {
-          const updateQuery = 'UPDATE blog_post SET title = ?, `desc` = ?, upload_time = now() WHERE id = ?';
+          const updateQuery = 'UPDATE blog_post SET title = ?, `desc` = ?, `long_desc` = ?, upload_time = now() WHERE id = ?';
           db.query(
             updateQuery, 
-            [title, desc, blogId], 
+            [title, desc, long_desc, blogId], 
             (updateErr, updateResult) => {
               if (updateErr) {
                   return res.status(400).send({
@@ -92,6 +91,7 @@ exports.getBlogs = (req, res) => {
         blog_post.id,
         blog_post.title,
         blog_post.desc,
+        blog_post.long_desc,
         blog_post.coverImage,
         blog_post.upload_time,
         blog_post.views,
@@ -115,6 +115,7 @@ exports.getBlogs = (req, res) => {
           id: row.id,
           title: row.title,
           desc: row.desc,
+          long_desc: row.long_desc,
           coverImage: row.coverImage,
           upload_time: row.upload_time,
           views: row.views,
