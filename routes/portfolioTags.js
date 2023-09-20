@@ -11,14 +11,14 @@ const router = express.Router();
 
 router.post(
   "/portfolio/create/portfolioTags",
-  // requireSignin,
-  // adminMiddleware,
+  requireSignin,
+  adminMiddleware,
   createPortfolioTags
 );
 router.post(
   "/portfolio/update/portfolioTags",
-  // requireSignin,
-  // adminMiddleware,
+  requireSignin,
+  adminMiddleware,
   updatePortfolioTags
 );
 

@@ -15,34 +15,34 @@ const router = express.Router();
 
 router.post(
   "/portfolio/create",
-  // requireSignin,
-  // adminMiddleware,
+  requireSignin,
+  adminMiddleware,
   upload.single('coverImage'),
   createPortfolio
 );
 router.post(
   "/portfolio/update",
-  // requireSignin,
-  // adminMiddleware,
+  requireSignin,
+  adminMiddleware,
   upload.single('coverImageUpdate'),
   updatePortfolio
 );
 router.post(
   "/portfolio/updateSorting",
-  // requireSignin,
-  // adminMiddleware,
+  requireSignin,
+  adminMiddleware,
   updateSortingPortfolio
 );
 router.get(
   "/portfolio/getPortfolios",
-  // requireSignin,
-  // adminMiddleware,
+  requireSignin,
+  adminMiddleware,
   getPortfolios
 );
 router.delete(
   "/portfolio/deletePortfolioById",
-  // requireSignin,
-  // adminMiddleware,
+  requireSignin,
+  adminMiddleware,
   deletePortfolioById
 );
 

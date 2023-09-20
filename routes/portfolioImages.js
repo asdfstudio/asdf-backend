@@ -11,16 +11,16 @@ const router = express.Router();
 
 router.post(
   "/portfolio/create/portfolioImages",
-  // requireSignin,
-  // adminMiddleware,
+  requireSignin,
+  adminMiddleware,
   upload.array('images'),
   createPortfolioImages
 );
 
 router.post(
   "/portfolio/update/portfolioImages",
-  // requireSignin,
-  // adminMiddleware,
+  requireSignin,
+  adminMiddleware,
   upload.array('images'),
   updatePortfolioImages
 );

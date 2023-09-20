@@ -14,28 +14,28 @@ const router = express.Router();
 
 router.post(
   "/blog/create",
-  // requireSignin,
-  // adminMiddleware,
+  requireSignin,
+  adminMiddleware,
   upload.single('coverImage'),
   createBlog
 );
 router.post(
   "/blog/update",
-  // requireSignin,
-  // adminMiddleware,
+  requireSignin,
+  adminMiddleware,
   upload.single('coverImageUpdate'),
   updateBlog
 );
 router.get(
   "/blog/getBlogs",
-  // requireSignin,
-  // adminMiddleware,
+  requireSignin,
+  adminMiddleware,
   getBlogs
 );
 router.delete(
   "/blog/deleteBlogById",
-  // requireSignin,
-  // adminMiddleware,
+  requireSignin,
+  adminMiddleware,
   deleteBlogById
 );
 

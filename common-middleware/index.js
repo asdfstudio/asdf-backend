@@ -96,7 +96,7 @@ exports.requireSignin = (req, res, next) => {
 
 exports.adminMiddleware = (req, res, next) => {
   if (req.user.role !== "admin") {
-    if (req.user.role !== "super-admin") {
+    if (req.user.role !== "superAdmin") {
       return res.status(400).json({ message: "Admin access denied" });
     }
   }
@@ -104,8 +104,8 @@ exports.adminMiddleware = (req, res, next) => {
 };
 
 exports.superAdminMiddleware = (req, res, next) => {
-  if (req.user.role !== "super-admin") {
-    return res.status(200).json({ message: "Super Admin access denied" });
+  if (req.user.role !== "superAdmin") {
+    return res.status(403).json({ message: "Super Admin access denied" });
   }
   next();
 };
