@@ -13,6 +13,7 @@ const portfolio = require('./routes/portfolio.js');
 const portfolioImages = require('./routes/portfolioImages.js');
 const portfolioTags = require('./routes/portfolioTags.js');
 const blog = require('./routes/blog.js');
+const user = require('./routes/user.js');
 const storage = require('./routes/storage.js');
 
 app.use('/api', authRouter);
@@ -20,6 +21,7 @@ app.use("/api", portfolio);
 app.use("/api", portfolioImages);
 app.use("/api", portfolioTags);
 app.use("/api", blog);
+app.use("/api", user);
 app.use("/api", storage);
 
 app.listen(PORT, () => console.log('Server running on port ' + PORT));
