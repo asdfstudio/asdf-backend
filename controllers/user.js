@@ -34,10 +34,28 @@ exports.getUsers = (req, res) => {
   });
 };
 
+exports.promoteToAdmin = (req, res) => {
+  const { userId, newRole } = req.body;
+
+  const updateUserRoleQuery = 'UPDATE users SET role = ? WHERE id = ?';
+
+  db.query(updateUserRoleQuery, [newRole, userId], (updateErr, updateResult) => {
+    if (updateErr) {
+      return res.status(400).json({ error: 'Error updating user role' });
+    }
+
+    if (updateResult.affectedRows === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    return res.status(200).json({ message: 'Promoted Successfully' });
+  });
+};
+
 exports.deleteUserById = (req, res) => {
   const { userId } = req.body.userId;
 
-  const deleteUserQuery = 'DELETE FROM blog_post WHERE id = ?';
+  const deleteUserQuery = 'DELETE FROM users WHERE id = ?';
 
     db.query(deleteUserQuery, [userId], (deleteErr, deleteResult) => {
         if (deleteErr) {
@@ -51,21 +69,3 @@ exports.deleteUserById = (req, res) => {
         });
     });
 };
-
-exports.promoteToAdmin = (req, res) => {
-    const {userId, newRole} = req.body;
-  
-    const updateUserRoleQuery = 'UPDATE users SET role = ? WHERE id = ?';
-  
-    db.query(updateUserRoleQuery, [newRole, userId], (updateErr, updateResult) => {
-      if (updateErr) {
-        return res.status(400).json({ error: 'Error updating user role' });
-      }
-  
-      if (updateResult.affectedRows === 0) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-  
-      return res.status(200).json({ message: 'Add user Successfully' });
-    });
-  };

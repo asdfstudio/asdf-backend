@@ -226,8 +226,6 @@ exports.deletePortfolioById = (req, res) => {
     WHERE 
       id = ?`;
 
-      // console.log("portfolioIdddddddd", portfolioId);
-
   if (portfolioId) {
     db.query(selectPortfolioImageQuery, [portfolioId], (err, results) => {
 

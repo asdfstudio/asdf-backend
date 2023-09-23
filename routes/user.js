@@ -18,18 +18,26 @@ router.get(
   adminMiddleware,
   getUsers
 );
+
+router.post(
+  "/user/promoteToAdmin",
+  requireSignin,
+  adminMiddleware,
+  promoteToAdmin
+);
+
+router.post(
+  "/user/promoteToSuperAdmin",
+  requireSignin,
+  superAdminMiddleware,
+  promoteToAdmin
+);
+
 router.delete(
   "/user/deleteUserById",
   requireSignin,
   adminMiddleware,
   deleteUserById
-);
-
-router.post(
-  "/user/promoteToAdmin",
-  requireSignin,
-  superAdminMiddleware,
-  promoteToAdmin
 );
 
 module.exports = router;

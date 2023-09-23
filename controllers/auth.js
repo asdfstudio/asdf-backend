@@ -36,7 +36,7 @@ exports.login = async (req, res) => {
                       {
                         email: result[0].email,
                         userId: result[0].id,
-                        role: 'admin'
+                        role: result[0].role
                       },
                       process.env.JWT_SECRET,
                       { expiresIn: '1d' }
