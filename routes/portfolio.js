@@ -35,8 +35,8 @@ router.post(
 );
 router.get(
   "/portfolio/getPortfolios",
-  requireSignin,
-  adminMiddleware,
+  // requireSignin,
+  // adminMiddleware,
   getPortfolios
 );
 router.delete(

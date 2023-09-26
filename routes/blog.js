@@ -28,8 +28,8 @@ router.post(
 );
 router.get(
   "/blog/getBlogs",
-  requireSignin,
-  adminMiddleware,
+  // requireSignin,
+  // adminMiddleware,
   getBlogs
 );
 router.delete(
