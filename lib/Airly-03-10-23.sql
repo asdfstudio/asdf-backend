@@ -147,6 +147,8 @@ CREATE TABLE `users` (
   `role` varchar(45) NOT NULL DEFAULT 'user',
   `registered` datetime NOT NULL,
   `last_login` datetime DEFAULT NULL,
+  `reset_token` varchar(255) DEFAULT NULL,
+  `reset_token_expiration` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -157,8 +159,33 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES ('52e455d2-ef79-4b0d-8d6f-16662549977a','Airly','Admin','$2a$10$W1ibm3zzbS5bSI78GVH00O/xXWz7qj1rds1K7916xRvf22ck7da5u','admin','2023-08-31 11:00:08','2023-09-26 04:19:06'),('cbd6eea2-ea6c-4432-ac7e-3d5242dd1ae8','Airly Super Admin','Super Admin','$2a$10$ZZ3y933zU.N9lz03aOHnBu8VxnoLgkMYtq6OqRmFtBRMNKmBrSGvy','superAdmin','2023-09-23 10:16:47','2023-09-23 10:17:49');
+INSERT INTO `users` VALUES ('52e455d2-ef79-4b0d-8d6f-16662549977a','Airly','admin@gmail.com','$2a$10$W1ibm3zzbS5bSI78GVH00O/xXWz7qj1rds1K7916xRvf22ck7da5u','admin','2023-08-31 11:00:08','2023-10-02 07:18:20',NULL,NULL),('cbd6eea2-ea6c-4432-ac7e-3d5242dd1ae8','Airly Super Admin','superadmin@gmail.com','$2a$10$ZZ3y933zU.N9lz03aOHnBu8VxnoLgkMYtq6OqRmFtBRMNKmBrSGvy','superAdmin','2023-09-23 10:16:47','2023-09-23 10:17:49',NULL,NULL),('e228b88a-ca8a-4ce8-bfe5-6499788b46c9','Taraqul Islam Rony','rony120114@gmail.com','$2a$10$/DOHc.Vk0UhKV5heKbrzFelP3Hi6jmrQ8qozFohYuPlmuTJ/cW4IW','admin','2023-10-02 07:17:48','2023-10-02 07:18:38',NULL,NULL);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `visitors`
+--
+
+DROP TABLE IF EXISTS `visitors`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `visitors` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `ip_address` varchar(45) DEFAULT NULL,
+  `user_agent` varchar(255) DEFAULT NULL,
+  `timestamp` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `visitors`
+--
+
+LOCK TABLES `visitors` WRITE;
+/*!40000 ALTER TABLE `visitors` DISABLE KEYS */;
+/*!40000 ALTER TABLE `visitors` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -170,4 +197,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-09-26 10:36:49
+-- Dump completed on 2023-10-03 19:20:04
