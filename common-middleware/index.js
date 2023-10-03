@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const shortid = require("shortid");
 const path = require("path");
+const db = require('../lib/db');
 // const multer = require("multer");
 // const shortid = require("shortid");
 // const path = require("path");
@@ -108,4 +109,38 @@ exports.superAdminMiddleware = (req, res, next) => {
     return res.status(403).json({ message: "Super Admin access denied" });
   }
   next();
+};
+
+exports.setVisitors = (req, res, next) => {
+  const { ip, headers } = req;
+  const userAgent = headers['user-agent'];
+
+  // Check if the visitor's IP address already exists in the database
+  db.query(
+    'SELECT * FROM visitors WHERE ip_address = ?',
+    [ip],
+    (err, result) => {
+      if (err) {
+        console.error('Error checking existing visitor data:', err);
+        next();
+        return;
+      }
+
+      // Insert visitor data only if the IP address doesn't exist
+      if (result.length === 0) {
+        db.query(
+          'INSERT INTO visitors (ip_address, user_agent) VALUES (?, ?)',
+          [ip, userAgent],
+          (err) => {
+            if (err) {
+              console.error('Error logging visitor data:', err);
+            }
+            next();
+          }
+        );
+      } else {
+        next();
+      }
+    }
+  );
 };

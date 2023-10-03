@@ -3,6 +3,7 @@ const {
   requireSignin,
   adminMiddleware,
   upload,
+  setVisitors,
 } = require("../common-middleware");
 const {
   createPortfolio,
@@ -34,9 +35,12 @@ router.post(
   updateSortingPortfolio
 );
 router.get(
+  "/admin/portfolio/getPortfolios",
+  getPortfolios
+);
+router.get(
   "/portfolio/getPortfolios",
-  // requireSignin,
-  // adminMiddleware,
+  setVisitors,
   getPortfolios
 );
 router.delete(

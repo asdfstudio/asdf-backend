@@ -34,9 +34,8 @@ async function sendResetEmail(email, token) {
     to: email,
     subject: 'Password Reset',
     html:
-  '<p>Please click on the following link to verify your email address:</p>' +
-  'http://localhost:3000/user/resetPassword?token=' +
-  token,
+    '<p>Please click on the following link to verify your email address:</p>' +
+    'http://localhost:3000/user/resetPassword?token=' + token,
   };
 
   transporter.sendMail(mailOptions, (error, info) => {
