@@ -115,7 +115,6 @@ exports.setVisitors = (req, res, next) => {
   const { ip, headers } = req;
   const userAgent = headers['user-agent'];
 
-  // Check if the visitor's IP address already exists in the database
   db.query(
     'SELECT * FROM visitors WHERE ip_address = ?',
     [ip],
@@ -126,7 +125,6 @@ exports.setVisitors = (req, res, next) => {
         return;
       }
 
-      // Insert visitor data only if the IP address doesn't exist
       if (result.length === 0) {
         db.query(
           'INSERT INTO visitors (ip_address, user_agent) VALUES (?, ?)',
