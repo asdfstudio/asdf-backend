@@ -1,4 +1,5 @@
 const db = require('../lib/db.js');
+const ip = require('ip');
 
 exports.visitors = (req, res) => {
     try {
