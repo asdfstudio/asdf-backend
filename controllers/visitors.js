@@ -105,7 +105,8 @@ exports.portfolioVisitors = (req, res) => {
 exports.setPortfoliovisitors = (req, res) => {
   try {
     const { portfolioId, entranceTime } = req.body;
-    const visitorIp = req.ip;
+    // const visitorIp = req.ip;
+    const visitorIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     
     db.query(
       'INSERT INTO portfolio_visits (portfolio_id, visitor_ip, entrance_time) VALUES (?, ?, ?)',
@@ -127,7 +128,8 @@ exports.setPortfoliovisitors = (req, res) => {
 exports.exitPortfoliovisitors = (req, res) => {
   try {
     const { portfolioId, entranceTime, exitTime } = req.body;
-    const visitorIp = req.ip;
+    // const visitorIp = req.ip;
+    const visitorIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     const timeSpent = new Date(exitTime) - new Date(entranceTime);
 
     db.query(
