@@ -106,8 +106,6 @@ exports.portfolioVisitors = (req, res) => {
 exports.setPortfoliovisitors = (req, res) => {
   try {
     const { portfolioId, entranceTime } = req.body;
-    // const visitorIp = ip.address();
-    // let clientIP = req.ip;
     const visitorIp = req.headers['x-real-ip'] || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     
     db.query(
@@ -130,7 +128,6 @@ exports.setPortfoliovisitors = (req, res) => {
 exports.exitPortfoliovisitors = (req, res) => {
   try {
     const { portfolioId, entranceTime, exitTime } = req.body;
-    // const visitorIp = ip.address();
     const visitorIp = req.headers['x-real-ip'] || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     const timeSpent = new Date(exitTime) - new Date(entranceTime);
 

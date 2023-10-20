@@ -112,12 +112,12 @@ exports.superAdminMiddleware = (req, res, next) => {
 };
 
 exports.setVisitors = (req, res, next) => {
-  const { ip, headers } = req;
+  const { headers } = req;
+  const visitorIp = req.headers['x-real-ip'] || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
   const userAgent = headers['user-agent'];
-
   db.query(
     'SELECT * FROM visitors WHERE ip_address = ?',
-    [ip],
+    [visitorIp],
     (err, result) => {
       if (err) {
         console.error('Error checking existing visitor data:', err);
@@ -128,7 +128,7 @@ exports.setVisitors = (req, res, next) => {
       if (result.length === 0) {
         db.query(
           'INSERT INTO visitors (ip_address, user_agent) VALUES (?, ?)',
-          [ip, userAgent],
+          [visitorIp, userAgent],
           (err) => {
             if (err) {
               console.error('Error logging visitor data:', err);
