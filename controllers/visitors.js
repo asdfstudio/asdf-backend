@@ -37,31 +37,6 @@ exports.getTopPortfolios = (req, res) => {
           return;
         }
 
-        //   function formatTime(milliseconds) {
-        //     const seconds = Math.floor(milliseconds / 1000);
-        //     if (seconds < 60) {
-        //         return `${seconds} seconds`;
-        //     } else {
-        //         const minutes = Math.floor(seconds / 60);
-        //         const remainingSeconds = seconds % 60;
-        //         if (minutes < 30) {
-        //             return `${minutes} minutes and ${remainingSeconds} seconds`;
-        //         } else {
-        //             const hours = Math.floor(minutes / 60);
-        //             const remainingMinutes = minutes % 60;
-        //             return `${hours} hours and ${remainingMinutes} minutes`;
-        //         }
-        //     }
-        //     return seconds;
-        // }
-        
-        // const processedData = results.map(item => ({
-        //     ...item,
-        //     "total_time_spent": formatTime(item.total_time_spent)
-        // }));
-    
-        // res.json(processedData);
-
       function millisecondsToMinutes(milliseconds) {
           return Math.floor(milliseconds / 60000);
       }
@@ -79,29 +54,6 @@ exports.getTopPortfolios = (req, res) => {
   }
 };
 
-
-exports.portfolioVisitors = (req, res) => {
-  try {
-    const portfolioId = req.body.portfolioId;
-
-    db.query(
-      'SELECT COUNT(DISTINCT visitor_ip) AS visitorCount FROM portfolio_visits WHERE portfolio_id = ?',
-      [portfolioId],
-      (err, result) => {
-        if (err) {
-          console.error('Error calculating visitor count:', err);
-          res.status(500).json({ error: 'Internal server error' });
-          return;
-        }
-  
-        const visitorCount = result[0] ? result[0].visitorCount : 0;
-        res.json({ visitorCount });
-      }
-    );
-  } catch (error) {
-    res.status(500).json({ message: 'Internal server error.' });
-  }
-};
 
 exports.setPortfoliovisitors = (req, res) => {
   try {
@@ -149,25 +101,58 @@ exports.exitPortfoliovisitors = (req, res) => {
   }
 };
 
-exports.portfolioTimeSpent = (req, res) => {
-  try {
-    const portfolioId = req.body.portfolioId;
+exports.portfolioTimeSpent = (portfolioId) => {
 
+  return new Promise((resolve, reject) => {
     db.query(
       'SELECT SUM(time_spent) AS totalSpentTime FROM portfolio_visits WHERE portfolio_id = ?',
       [portfolioId],
       (err, result) => {
         if (err) {
           console.error('Error calculating total time spent:', err);
-          res.status(500).json({ error: 'Internal server error' });
-          return;
+          reject(err);
+        } else {
+          const totalSpentTime = result[0] ? result[0].totalSpentTime : 0;
+
+          function formatTime(milliseconds) {
+            const seconds = Math.floor(milliseconds / 1000);
+            if (seconds < 60) {
+                return `${seconds} sec`;
+            } else {
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = seconds % 60;
+                if (minutes < 30) {
+                    return `${minutes} min ${remainingSeconds} sec`;
+                } else {
+                    const hours = Math.floor(minutes / 60);
+                    const remainingMinutes = minutes % 60;
+                    return `${hours} hr ${remainingMinutes} min`;
+                }
+            }
+            return seconds;
         }
-  
-        const totalSpentTime = result[0] ? result[0].totalSpentTime : 0;
-        res.json({ totalSpentTime });
+          resolve(formatTime(totalSpentTime));
+        }
       }
     );
-  } catch (error) {
-    res.status(500).json({ message: 'Internal server error.' });
-  }
+  });
+};
+
+exports.portfolioVisitors = (portfolioId) => {
+
+  return new Promise((resolve, reject) => {
+    db.query(
+      'SELECT COUNT(DISTINCT visitor_ip) AS visitorCount FROM portfolio_visits WHERE portfolio_id = ?',
+      [portfolioId],
+      (err, result) => {
+        if (err) {
+          console.error('Error calculating total visitor:', err);
+          reject(err);
+        } else {
+          const visitorCount = result[0] ? result[0].visitorCount : 0;
+          resolve(visitorCount);
+        }
+      }
+    );
+  });
 };

@@ -2,6 +2,7 @@ const db = require('../lib/db.js');
 const uuid = require('uuid');
 const fs = require('fs');
 const path = require('path');
+const { portfolioTimeSpent, portfolioVisitors } = require('./visitors.js');
 
 exports.createPortfolio = (req, res) => {
   const { name, desc } = req.body;
@@ -115,8 +116,7 @@ exports.updateSortingPortfolio = (req, res) => {
 };
 
 
-exports.getPortfolios = (req, res) => {
-  
+exports.getPortfolios = async (req, res) => {
   const query = `
     SELECT 
       portfolio.id, 
@@ -134,67 +134,82 @@ exports.getPortfolios = (req, res) => {
     LEFT JOIN portfolio_tags 
     ON portfolio.id = portfolio_tags.portfolio_tag_id
     ORDER BY portfolio.sortedOrder ASC, portfolio_pictures.sortedOrder ASC;`;
-    
-  // const query = 'SELECT * FROM portfolio';
-  db.query(query, (err, results) => {
-    if (err) {
-      res.status(400).send({
-        message: err,
-      });
-    }
 
-    const portfolios = [];
+  try {
+    db.query(query, async (err, results) => {
+      if (err) {
+        return res.status(400).send({ message: err });
+      }
 
-    results.forEach((row) => {
-      const {
-        id,
-        name,
-        desc,
-        coverImage,
-        createdAt,
-        portfolio_pictures_id,
-        image,
-        portfolio_tags_id,
-        tag
-      } = row;
+      const portfolios = [];
 
-      let portfolio = portfolios.find((p) => p.id === id);
-
-      if (!portfolio) {
-        portfolio = {
+      for (const row of results) {
+        const {
           id,
           name,
           desc,
           coverImage,
           createdAt,
-          portfolio_pictures: [],
-          portfolio_tags: []
-        };
-        portfolios.push(portfolio);
+          portfolio_pictures_id,
+          image,
+          portfolio_tags_id,
+          tag
+        } = row;
+
+        let portfolio = portfolios.find((p) => p.id === id);
+
+        if (!portfolio) {
+          portfolio = {
+            id,
+            name,
+            desc,
+            coverImage,
+            createdAt,
+            portfolio_pictures: [],
+            portfolio_tags: [],
+          };
+
+          try {
+            const totalSpentTime = await portfolioTimeSpent(id);
+            portfolio.totalSpentTime = totalSpentTime;
+
+          } catch (error) {
+            console.error('Error fetching total spent time:', error);
+          }
+
+          try {
+            const totalVisitor = await portfolioVisitors(id);
+            portfolio.totalVisitor = totalVisitor;
+
+          } catch (error) {
+            console.error('Error fetching total visitor:', error);
+          }
+
+          portfolios.push(portfolio);
+        }
+
+        if (portfolio_pictures_id && image && !portfolio.portfolio_pictures.some(pic => pic.id === portfolio_pictures_id)) {
+          portfolio.portfolio_pictures.push({
+            id: portfolio_pictures_id,
+            image: image
+          });
+        }
+
+        if (portfolio_tags_id && tag && !portfolio.portfolio_tags.some(t => t.id === portfolio_tags_id)) {
+          portfolio.portfolio_tags.push({
+            id: portfolio_tags_id,
+            tag: tag
+          });
+        }
       }
-      
-      if (portfolio_pictures_id && image && !portfolio.portfolio_pictures.some(pic => pic.id === portfolio_pictures_id)) {
-        portfolio.portfolio_pictures.push({
-          id: portfolio_pictures_id,
-          image: image
-        });
-      }
-    
-      if (portfolio_tags_id && tag && !portfolio.portfolio_tags.some(t => t.id === portfolio_tags_id)) {
-        portfolio.portfolio_tags.push({
-          id: portfolio_tags_id,
-          tag: tag
-        });
-      }
-    });
+
       return res.status(200).json({ portfolios });
-
-
-      // return res.status(200).send({
-      //   message: 'Portfolio delete successfully!',
-      // });
-  });
+    });
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error.' });
+  }
 };
+
 
 exports.deletePortfolioById = (req, res) => {
   // const portfolioId = req.params.id;
