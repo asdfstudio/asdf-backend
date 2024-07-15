@@ -214,6 +214,13 @@ exports.getPortfolios = async (req, res) => {
 exports.deletePortfolioById = (req, res) => {
   // const portfolioId = req.params.id;
   const { portfolioId } = req.body.portfolioId;
+  
+  const deletePortfolioIdFromPortfolioVisits = `
+  DELETE FROM
+    portfolio_visits
+  WHERE
+    portfolio_id = ? `;
+ 
   const selectPortfolioImageQuery = `
     SELECT 
       portfolio.id,
@@ -229,6 +236,7 @@ exports.deletePortfolioById = (req, res) => {
       portfolio_pictures 
     WHERE 
       portfolio_image_id = ?`;
+
   const deletePortfolioTagsQuery = `
     DELETE FROM 
       portfolio_tags 
@@ -240,7 +248,7 @@ exports.deletePortfolioById = (req, res) => {
       portfolio
     WHERE 
       id = ?`;
-
+    
   if (portfolioId) {
     db.query(selectPortfolioImageQuery, [portfolioId], (err, results) => {
 
@@ -299,14 +307,23 @@ exports.deletePortfolioById = (req, res) => {
             return;
           }
 
-          db.query(deleteQuery, [portfolioId], (err, result) => {
+          db.query(deletePortfolioIdFromPortfolioVisits, [portfolioId], (err,result)=>{
+
             if (err) {
               res.status(400).send({ message: err });
               connection.rollback(() => {
-                res.status(500).json({ error: 'An error occurred while deleting portfolio data' });
+                res.status(500).json({ error: 'An error occurred while deleting child data' });
               });
               return;
             }
+              db.query(deleteQuery, [portfolioId], (err, result) => {
+              if (err) {
+                res.status(400).send({ message: err });
+                connection.rollback(() => {
+                  res.status(500).json({ error: 'An error occurred while deleting portfolio data' });
+                });
+                return;
+              }
 
             db.commit((err) => {
               if (err) {
@@ -341,6 +358,10 @@ exports.deletePortfolioById = (req, res) => {
               });
             });
           });
+            
+          })
+
+          
         });
       });
     });
